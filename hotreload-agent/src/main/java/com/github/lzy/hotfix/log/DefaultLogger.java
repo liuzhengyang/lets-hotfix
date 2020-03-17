@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * @author liuzhengyang <liuzhengyang75@gmail.com>
+ * @author liuzhengyang
  * Created on 2019-08-15
  */
 public class DefaultLogger implements Logger {

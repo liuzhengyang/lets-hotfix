@@ -1,7 +1,7 @@
 package com.github.lzy.hotfix.log;
 
 /**
- * @author liuzhengyang <liuzhengyang75@gmail.com>
+ * @author liuzhengyang
  * Created on 2019-08-15
  */
 public interface Logger {
