@@ -6,12 +6,9 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import javax.annotation.Resource;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,11 +21,11 @@ import com.github.lzy.hotfix.model.HotfixResult;
 import com.github.lzy.hotfix.model.JvmProcess;
 import com.github.lzy.hotfix.model.Result;
 import com.github.lzy.hotfix.proxy.AgentWebClient;
+import com.github.lzy.hotfix.registry.HotReloadInstance;
+import com.github.lzy.hotfix.registry.RegistryService;
 import com.github.lzy.hotfix.service.HotfixService;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.shared.Application;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
@@ -36,12 +33,6 @@ import reactor.core.publisher.Mono;
  */
 @Controller
 public class MainController {
-    private static final Logger logger = LoggerFactory.getLogger(MainController.class);
-
-    private static final String APPLICATION_NAME = "LETS-HOTFIX";
-
-    @Resource
-    private EurekaClient eurekaClient;
 
     @Resource
     private HotfixService hotfixService;
@@ -49,12 +40,13 @@ public class MainController {
     @Resource
     private AgentWebClient agentWebClient;
 
+    @Resource
+    private RegistryService registryService;
+
     @GetMapping("/")
     public String main(Model model) throws UnknownHostException {
         model.addAttribute("hostname", InetAddress.getLocalHost().getHostName());
-        Application application = eurekaClient.getApplication(APPLICATION_NAME);
-        List<InstanceInfo> instances = Optional.ofNullable(application)
-                .map(Application::getInstances).orElse(Collections.emptyList());
+        List<HotReloadInstance> instances = registryService.findAllInstances();
         model.addAttribute("instances", instances);
         return "main";
     }
@@ -71,8 +63,8 @@ public class MainController {
     @GetMapping("/hostList")
     @ResponseBody
     public Mono<Result<List<String>>> hostList() {
-        return Mono.justOrEmpty(eurekaClient.getApplication(APPLICATION_NAME))
-                .flatMapIterable(Application::getInstances)
+        return Mono.justOrEmpty(registryService.findAllInstances())
+                .flatMapMany(Flux::fromIterable)
                 .map(app -> String.join(":", app.getHostName(), String.valueOf(app.getPort())))
                 .collect(toList())
                 .defaultIfEmpty(Collections.emptyList())

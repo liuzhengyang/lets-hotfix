@@ -34,17 +34,28 @@ public class Bootstrap {
         CommandLineParser defaultParser = new DefaultParser();
         Options options = new Options()
                 .addOption("port", "port", true, "web port")
-                .addOption("eurekaServer", "eurekaServer", true, "eurekaServer");
+                .addOption("eurekaServer", "eurekaServer", true, "eurekaServer")
+                .addOption("localMode", false, "don't register to eureka server")
+                ;
         CommandLine commandLine = defaultParser.parse(options, args);
         String webPort = commandLine.getOptionValue("port");
+        boolean localMode = commandLine.hasOption("localMode");
         if (webPort == null || webPort.isEmpty()) {
             webPort = "18806";
         }
-        String eurekaServer = commandLine.getOptionValue("eurekaServer");
-        if (eurekaServer == null || eurekaServer.isEmpty()) {
-            System.out.println("No register server argument found. Usage: java -jar web.jar localhost:8761");
-            return;
+        String eurekaServer = null;
+        if (!localMode) {
+            eurekaServer = commandLine.getOptionValue("eurekaServer");
+            if (eurekaServer == null || eurekaServer.isEmpty()) {
+                System.out.println("No register server argument found. Usage: java -jar web.jar localhost:8761");
+                return;
+            } else {
+                System.out.println("Running with server mode with registering server " + eurekaServer);
+            }
+        } else {
+            System.out.println("Running with local mode");
         }
+
         Option.builder();
         List<String> command = new ArrayList<>();
         command.add("java");
@@ -64,7 +75,11 @@ public class Bootstrap {
         }
         command.add("-Dagent.path=" + agentJarFile.getAbsolutePath());
         command.add("-Dserver.port=" + webPort);
-        command.add("-Deureka.client.service-url.defaultZone=http://" + eurekaServer + "/eureka/");
+        if (localMode) {
+            command.add("-Deureka.client.enabled=false");
+        } else {
+            command.add("-Deureka.client.service-url.defaultZone=http://" + eurekaServer + "/eureka/");
+        }
         File localHotReloadWebJarFiles = findLocalHotReloadWebJarFiles();
         if (localHotReloadWebJarFiles == null){
             logger.error("Web jar not found");
@@ -135,6 +150,6 @@ public class Bootstrap {
     }
 
     public static String getLatestVersion() {
-        return "1.0.2";
+        return "1.0.3";
     }
 }
