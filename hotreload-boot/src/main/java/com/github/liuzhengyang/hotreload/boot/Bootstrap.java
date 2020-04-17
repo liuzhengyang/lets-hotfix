@@ -47,7 +47,7 @@ public class Bootstrap {
         if (!localMode) {
             eurekaServer = commandLine.getOptionValue("eurekaServer");
             if (eurekaServer == null || eurekaServer.isEmpty()) {
-                System.out.println("No register server argument found. Usage: java -jar web.jar --eurekaServer sd-bjpg-lc134.yz02:8761");
+                System.out.println("No register server argument found. Usage: java -jar web.jar --eurekaServer xxxx:18086");
                 return;
             } else {
                 System.out.println("Running with server mode with registering server " + eurekaServer);
