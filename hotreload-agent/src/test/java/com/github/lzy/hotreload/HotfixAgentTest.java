@@ -1,4 +1,4 @@
-package com.github.lzy.hotfix;
+package com.github.lzy.hotreload;
 
 import static org.junit.Assert.*;
 
@@ -11,10 +11,23 @@ import net.bytebuddy.agent.ByteBuddyAgent;
 public class HotfixAgentTest {
 
     @Test
+    public void loop() throws InterruptedException {
+        for (int i = 0; i < 1000000; i++) {
+            Thread.sleep(1000);
+            invoke();
+        }
+    }
+
+    void invoke() {
+        System.out.println("Hello121");
+        System.out.println("H123你好ello121");
+    }
+
+    @Test
     public void findStaticInnerClass() throws Exception {
         DummyStaticInnerService dummyService = new DummyStaticInnerService();
         Instrumentation instrumentation = ByteBuddyAgent.install();
-        Class<?> targetClass = HotfixAgent.findTargetClass("com.github.lzy.hotfix.HotfixAgentTest$DummyStaticInnerService", instrumentation);
+        Class<?> targetClass = HotReloadAgent.findTargetClass("com.github.lzy.hotreload.HotfixAgentTest$DummyStaticInnerService", instrumentation);
         assertNotNull(targetClass);
         assertEquals(targetClass, dummyService.getClass());
     }
@@ -23,7 +36,7 @@ public class HotfixAgentTest {
     public void findStaticClass() {
         DummyStaticOuterService dummyService = new DummyStaticOuterService();
         Instrumentation instrumentation = ByteBuddyAgent.install();
-        Class<?> targetClass = HotfixAgent.findTargetClass("com.github.lzy.hotfix.DummyStaticOuterService", instrumentation);
+        Class<?> targetClass = HotReloadAgent.findTargetClass("com.github.lzy.hotreload.DummyStaticOuterService", instrumentation);
         assertNotNull(targetClass);
         assertEquals(targetClass, dummyService.getClass());
     }

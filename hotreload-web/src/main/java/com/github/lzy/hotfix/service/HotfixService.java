@@ -1,28 +1,24 @@
 package com.github.lzy.hotfix.service;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.annotation.Resource;
-
-import org.objectweb.asm.ClassReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.github.liuzhengyang.hotreload.bytecode.util.ClassByteCodeUtils;
 import com.github.lzy.hotfix.model.JvmProcess;
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
-
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tag;
 
 /**
  * @author liuzhengyang
@@ -34,9 +30,6 @@ public class HotfixService {
     @Value("${agent.path}")
     private String agentPath;
 
-    @Resource
-    private MeterRegistry meterRegistry;
-
     public List<JvmProcess> getProcessList() {
         List<VirtualMachineDescriptor> list = VirtualMachine.list();
         return list.stream()
@@ -45,38 +38,44 @@ public class HotfixService {
     }
 
     public String hotfix(MultipartFile file, String targetPid) throws Exception {
-        logger.info("Start to reload {} in process id {}", file.getOriginalFilename(), targetPid);
+        String fileName = file.getOriginalFilename();
+        if (fileName == null) {
+            throw new IllegalArgumentException("Invalid file name" + fileName);
+        }
+        logger.info("Start to reload {} in process id {}", fileName, targetPid);
         JvmProcess jvmProcess = findProcess(targetPid);
         if (jvmProcess == null) {
             logger.info("Target process {} not found", targetPid);
             throw new IllegalArgumentException("Target process not found " + targetPid);
         }
         VirtualMachine attach = VirtualMachine.attach(targetPid);
-        ClassReader classReader = new ClassReader(file.getBytes());
-        String className = classReader.getClassName();
-        String targetClass = className.replaceAll("/", ".");
-        Path replaceClassFile = Files.write(Paths.get("/tmp/" + targetClass), file.getBytes(),
+        String className = getClassName(file);
+        Path replaceClassFile = Files.write(Paths.get("/tmp/" + className), file.getBytes(),
                 StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         logger.info("Save replace class file to {}", replaceClassFile);
-        String agentArgs = String.join(",", targetClass,
+        String agentArgs = String.join(",", className,
                 replaceClassFile.toFile().getAbsolutePath());
         try {
-            List<Tag> tags = new ArrayList<>();
-            tags.add(Tag.of("pid", targetPid));
-            tags.add(Tag.of("targetClass", targetClass));
-            tags.add(Tag.of("displayName", jvmProcess.getDisplayName()));
-            tags.add(Tag.of("args", jvmProcess.getDetailVmArgs()));
-            meterRegistry.timer("hotfixReload", tags).recordCallable(() -> {
-                attach.loadAgent(agentPath, agentArgs);
-                return "";
-            });
-            meterRegistry.counter("hotfixReload.success", tags).increment();
+            attach.loadAgent(agentPath, agentArgs);
         } finally {
             attach.detach();
-            Files.delete(replaceClassFile);
+//            Files.delete(replaceClassFile);
             logger.info("Reload finished!");
         }
-        return targetClass;
+        return className;
+    }
+
+    String getClassName(MultipartFile file) throws IOException {
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null) {
+            throw new IllegalArgumentException("Invalid file name" + originalFilename);
+        }
+        if (originalFilename.endsWith(".class")) {
+            return ClassByteCodeUtils.getClassNameFromByteCode(file.getBytes());
+        }
+        byte[] bytes = file.getBytes();
+        String sourceCode = new String(bytes, StandardCharsets.UTF_8);
+        return ClassByteCodeUtils.getClassNameFromSourceCode(sourceCode);
     }
 
     private JvmProcess findProcess(String pid) {
