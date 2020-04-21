@@ -42,6 +42,8 @@ public class HotfixService {
         if (fileName == null) {
             throw new IllegalArgumentException("Invalid file name" + fileName);
         }
+        int indexOfDot = fileName.lastIndexOf(".");
+        String extension = fileName.substring(indexOfDot);
         logger.info("Start to reload {} in process id {}", fileName, targetPid);
         JvmProcess jvmProcess = findProcess(targetPid);
         if (jvmProcess == null) {
@@ -50,7 +52,7 @@ public class HotfixService {
         }
         VirtualMachine attach = VirtualMachine.attach(targetPid);
         String className = getClassName(file);
-        Path replaceClassFile = Files.write(Paths.get("/tmp/" + className), file.getBytes(),
+        Path replaceClassFile = Files.write(Paths.get("/tmp/" + className + extension), file.getBytes(),
                 StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         logger.info("Save replace class file to {}", replaceClassFile);
         String agentArgs = String.join(",", className,
@@ -59,7 +61,7 @@ public class HotfixService {
             attach.loadAgent(agentPath, agentArgs);
         } finally {
             attach.detach();
-//            Files.delete(replaceClassFile);
+            Files.move(replaceClassFile, replaceClassFile.resolveSibling(".bak." + System.nanoTime()));
             logger.info("Reload finished!");
         }
         return className;

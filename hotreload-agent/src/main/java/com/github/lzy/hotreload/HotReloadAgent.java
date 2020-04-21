@@ -59,7 +59,7 @@ public class HotReloadAgent {
             byte[] newClazzByteCode = Files.readAllBytes(file.toPath());
             doReloadClassFile(instrumentation, className, newClazzByteCode);
         } else {
-            logger.info("Reload by class file");
+            logger.info("Reload by java file");
             byte[] newClazzSourceBytes = Files.readAllBytes(file.toPath());
             doCompileThenReloadClassFile(instrumentation, className, new String(newClazzSourceBytes, UTF_8));
         }
@@ -119,7 +119,11 @@ public class HotReloadAgent {
     }
 
     private static ClassLoader getClassLoader(String className, Instrumentation instrumentation) {
-        return findTargetClass(className, instrumentation).getClassLoader();
+        Class<?> targetClass = findTargetClass(className, instrumentation);
+        if (targetClass != null) {
+            return targetClass.getClassLoader();
+        }
+        return HotReloadAgent.class.getClassLoader();
     }
 
     //@VisibleForTest

@@ -2,6 +2,8 @@ package com.github.liuzhengyang.hotreload.bytecode.util;
 
 import java.util.Optional;
 
+import org.objectweb.asm.ClassReader;
+
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.PackageDeclaration;
@@ -13,7 +15,9 @@ import com.github.javaparser.ast.PackageDeclaration;
  */
 public class ClassByteCodeUtils {
     public static String getClassNameFromByteCode(byte[] bytes) {
-        return null;
+        ClassReader classReader = new ClassReader(bytes);
+        String className = classReader.getClassName();
+        return className.replaceAll("/", ".");
     }
 
     public static String getClassNameFromSourceCode(String sourceCode) {

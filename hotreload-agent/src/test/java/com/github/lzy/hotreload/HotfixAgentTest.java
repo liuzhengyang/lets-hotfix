@@ -19,8 +19,7 @@ public class HotfixAgentTest {
     }
 
     void invoke() {
-        System.out.println("Hello121");
-        System.out.println("H123你好ello121");
+        System.out.println("lzy");
     }
 
     @Test
