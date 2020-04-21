@@ -11,6 +11,6 @@ import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 @EnableEurekaClient
 public class ProjectBootstrap {
     public static void main(String[] args) {
-        SpringApplication.run(ProjectBootstrap.class);
+        SpringApplication.run(ProjectBootstrap.class, args);
     }
 }

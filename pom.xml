@@ -13,6 +13,7 @@
         <module>hotreload-web</module>
         <module>hotreload-registry</module>
         <module>hotreload-boot</module>
+        <module>hotreload-core</module>
     </modules>
 
     <parent>
@@ -22,7 +23,7 @@
     </parent>
 
     <properties>
-        <hotreload.version>1.0.5</hotreload.version>
+        <hotreload.version>1.0.6</hotreload.version>
     </properties>
 
     <distributionManagement>
@@ -50,6 +51,11 @@
             <dependency>
                 <groupId>com.github.liuzhengyang</groupId>
                 <artifactId>hotreload-agent</artifactId>
+                <version>${hotreload.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.liuzhengyang</groupId>
+                <artifactId>hotreload-core</artifactId>
                 <version>${hotreload.version}</version>
             </dependency>
             <dependency>

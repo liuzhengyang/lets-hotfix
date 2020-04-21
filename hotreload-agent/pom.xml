@@ -14,6 +14,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.github.liuzhengyang</groupId>
+            <artifactId>hotreload-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy-agent</artifactId>
             <version>1.9.9</version>
@@ -22,6 +26,15 @@
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
             <version>1.9.9</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.2.3</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -56,8 +69,8 @@
                             </descriptorRefs>
                             <archive>
                                 <manifestEntries>
-                                    <Premain-Class>com.github.lzy.hotfix.HotfixAgent</Premain-Class>
-                                    <Agent-Class>com.github.lzy.hotfix.HotfixAgent</Agent-Class>
+                                    <Premain-Class>com.github.lzy.hotreload.HotReloadAgent</Premain-Class>
+                                    <Agent-Class>com.github.lzy.hotreload.HotReloadAgent</Agent-Class>
                                     <Can-Redefine-Classes>true</Can-Redefine-Classes>
                                     <Can-Retransform-Classes>true</Can-Retransform-Classes>
                                     <Specification-Title>${project.name}</Specification-Title>
