@@ -6,6 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,37 +42,41 @@ public class HotfixService {
     public String hotfix(MultipartFile file, String targetPid) throws Exception {
         String fileName = file.getOriginalFilename();
         if (fileName == null) {
-            throw new IllegalArgumentException("Invalid file name" + fileName);
+            throw new IllegalArgumentException("Invalid file name " + null);
         }
-        int indexOfDot = fileName.lastIndexOf(".");
-        String extension = fileName.substring(indexOfDot);
-        logger.info("Start to reload {} in process id {}", fileName, targetPid);
-        JvmProcess jvmProcess = findProcess(targetPid);
-        if (jvmProcess == null) {
-            logger.info("Target process {} not found", targetPid);
-            throw new IllegalArgumentException("Target process not found " + targetPid);
+        synchronized (fileName.intern()) {
+            int indexOfDot = fileName.lastIndexOf(".");
+            String extension = fileName.substring(indexOfDot);
+            logger.info("Start to reload {} in process id {}", fileName, targetPid);
+            JvmProcess jvmProcess = findProcess(targetPid);
+            if (jvmProcess == null) {
+                logger.info("Target process {} not found", targetPid);
+                throw new IllegalArgumentException("Target process not found " + targetPid);
+            }
+            VirtualMachine attach = VirtualMachine.attach(targetPid);
+            String className = getClassName(file);
+            Path replaceClassFile = Files.write(Paths.get("/tmp/" + className + extension), file.getBytes(),
+                    StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+            logger.info("Save replace class file to {}", replaceClassFile);
+            String agentArgs = String.join(",", className,
+                    replaceClassFile.toFile().getAbsolutePath());
+            try {
+                attach.loadAgent(agentPath, agentArgs);
+            } finally {
+                attach.detach();
+                String datetime = new SimpleDateFormat("yyyy_MM_dd_HH_mm_sss").format(new Date());
+                String backupFileName = replaceClassFile + ".bak." + datetime;
+                Files.move(replaceClassFile, replaceClassFile.resolveSibling(backupFileName));
+                logger.info("Reload finished!");
+            }
+            return className;
         }
-        VirtualMachine attach = VirtualMachine.attach(targetPid);
-        String className = getClassName(file);
-        Path replaceClassFile = Files.write(Paths.get("/tmp/" + className + extension), file.getBytes(),
-                StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-        logger.info("Save replace class file to {}", replaceClassFile);
-        String agentArgs = String.join(",", className,
-                replaceClassFile.toFile().getAbsolutePath());
-        try {
-            attach.loadAgent(agentPath, agentArgs);
-        } finally {
-            attach.detach();
-            Files.move(replaceClassFile, replaceClassFile.resolveSibling(".bak." + System.nanoTime()));
-            logger.info("Reload finished!");
-        }
-        return className;
     }
 
     String getClassName(MultipartFile file) throws IOException {
         String originalFilename = file.getOriginalFilename();
         if (originalFilename == null) {
-            throw new IllegalArgumentException("Invalid file name" + originalFilename);
+            throw new IllegalArgumentException("Invalid file name " + null);
         }
         if (originalFilename.endsWith(".class")) {
             return ClassByteCodeUtils.getClassNameFromByteCode(file.getBytes());
