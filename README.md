@@ -42,8 +42,7 @@ Java代码热更新工具正是为了解决这种痛点开发的，修改完代�
 
 一个机器只需安装一次agent，在测试机中运行如下命令即可。
 ```
-wget https://maven.aliyun.com/repository/public/com/github/liuzhengyang/hotreload-boot/1.0.5/hotreload-boot-1.0.5-jar-with-dependencies.jar
-java -jar hotreload-boot-1.0.5-jar-with-dependencies.jar -localMode
+curl -s https://raw.githubusercontent.com/liuzhengyang/lets-hotfix/master/bin/boot.sh | bash /dev/stdin -localMode
 ```
 ![agentinstall](./images/hotreloadinstall.png)
 
@@ -86,8 +85,8 @@ tar -zxvf java11-openjdk-dcevm-linux.tar.gz
 如果测试机较多，并且不能直连测试机的话，给每个测试机配置nginx是一个比较麻烦的事情，所以HotReload工具也支持代理注册模式。
 首先找一个机器启动一个集中的使用eureka的注册中心。
 ```
-wget https://maven.aliyun.com/repository/public/com/github/liuzhengyang/hotreload-registry/1.0.5/hotreload-registry-1.0.5.jar
-java -jar hotreload-registry-1.0.5.jar
+wget https://maven.aliyun.com/repository/public/com/github/liuzhengyang/hotreload-registry/1.0.8/hotreload-registry-1.0.8.jar
+java -jar hotreload-registry-1.0.8.jar
 ```
 然后启动hotreload-boot的时候，增加参数 --eurekaServer xxx:8761，xxx是启动eureka那个机器的ip或hostname
 
