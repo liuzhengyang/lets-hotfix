@@ -68,6 +68,7 @@ public class HotReloadAgent {
     private static void doCompileThenReloadClassFile(Instrumentation instrumentation, String className,
              String sourceCode) {
         ClassLoader classLoader = getClassLoader(className, instrumentation);
+        logger.info("Target class {} class loader {}", className, classLoader);
         DynamicCompiler dynamicCompiler = new DynamicCompiler(classLoader);
         dynamicCompiler.addSource(className, sourceCode);
         Map<String, byte[]> classNameToByteCodeMap = dynamicCompiler.buildByteCodes();

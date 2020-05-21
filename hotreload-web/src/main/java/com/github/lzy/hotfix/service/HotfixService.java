@@ -64,7 +64,7 @@ public class HotfixService {
                 attach.loadAgent(agentPath, agentArgs);
             } finally {
                 attach.detach();
-                String datetime = new SimpleDateFormat("yyyy_MM_dd_HH_mm_sss").format(new Date());
+                String datetime = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS").format(new Date());
                 String backupFileName = replaceClassFile + ".bak." + datetime;
                 Files.move(replaceClassFile, replaceClassFile.resolveSibling(backupFileName));
                 logger.info("Reload finished!");
