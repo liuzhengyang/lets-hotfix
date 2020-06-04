@@ -23,7 +23,7 @@
     </parent>
 
     <properties>
-        <hotreload.version>1.0.10</hotreload.version>
+        <hotreload.version>1.0.11</hotreload.version>
     </properties>
 
     <distributionManagement>

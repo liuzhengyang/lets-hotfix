@@ -151,6 +151,6 @@ public class Bootstrap {
     }
 
     public static String getLatestVersion() {
-        return "1.0.10";
+        return "1.0.11";
     }
 }
