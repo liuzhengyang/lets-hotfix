@@ -26,7 +26,7 @@ public class HotfixAgentTest {
     public void findStaticInnerClass() throws Exception {
         DummyStaticInnerService dummyService = new DummyStaticInnerService();
         Instrumentation instrumentation = ByteBuddyAgent.install();
-        Class<?> targetClass = HotReloadAgent.findTargetClass("com.github.lzy.hotreload.HotfixAgentTest$DummyStaticInnerService", instrumentation);
+        Class<?> targetClass = HotReloadWorker.findTargetClass("com.github.lzy.hotreload.HotfixAgentTest$DummyStaticInnerService", instrumentation);
         assertNotNull(targetClass);
         assertEquals(targetClass, dummyService.getClass());
     }
@@ -35,7 +35,7 @@ public class HotfixAgentTest {
     public void findStaticClass() {
         DummyStaticOuterService dummyService = new DummyStaticOuterService();
         Instrumentation instrumentation = ByteBuddyAgent.install();
-        Class<?> targetClass = HotReloadAgent.findTargetClass("com.github.lzy.hotreload.DummyStaticOuterService", instrumentation);
+        Class<?> targetClass = HotReloadWorker.findTargetClass("com.github.lzy.hotreload.DummyStaticOuterService", instrumentation);
         assertNotNull(targetClass);
         assertEquals(targetClass, dummyService.getClass());
     }

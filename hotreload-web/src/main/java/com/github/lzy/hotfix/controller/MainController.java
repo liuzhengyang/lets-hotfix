@@ -2,11 +2,13 @@ package com.github.lzy.hotfix.controller;
 
 import static java.util.stream.Collectors.toList;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
 import org.springframework.stereotype.Controller;
@@ -42,6 +44,12 @@ public class MainController {
 
     @Resource
     private RegistryService registryService;
+
+    @PostConstruct
+    public void init() {
+        File fileUploadDirectory = new File(System.getProperty("user.home") + "/logs/hotreload/work/Tomcat/localhost/ROOT/upload");
+        fileUploadDirectory.mkdirs();
+    }
 
     @GetMapping("/")
     public String main(Model model) throws UnknownHostException {
