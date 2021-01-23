@@ -1,14 +1,13 @@
 package com.github.liuzhengyang.hotreload.boot;
 
+import static com.github.liuzhengyang.hotreload.boot.HotReloadFileUtils.findLocalHotReloadAgentCoreJarFiles;
+import static com.github.liuzhengyang.hotreload.boot.HotReloadFileUtils.findLocalHotReloadAgentJarFiles;
+import static com.github.liuzhengyang.hotreload.boot.HotReloadFileUtils.findLocalHotReloadWebJarFiles;
+
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,8 +26,6 @@ import org.slf4j.LoggerFactory;
  */
 public class Bootstrap {
     private static final Logger logger = LoggerFactory.getLogger(Bootstrap.class);
-
-    private static final String ALI_YUN_MAVEN_PREFIX = "https://maven.aliyun.com/repository/public";
 
     public static void main(String[] args) throws Exception {
         CommandLineParser defaultParser = new DefaultParser();
@@ -69,6 +66,7 @@ public class Bootstrap {
         }
         command.add("-jar");
         File agentJarFile = findLocalHotReloadAgentJarFiles();
+        findLocalHotReloadAgentCoreJarFiles();
         if (agentJarFile == null){
             logger.error("Agent jar not found");
             return;
@@ -100,57 +98,5 @@ public class Bootstrap {
             }
         }
         logger.info("HotReload web service started");
-    }
-
-    private static File findLocalHotReloadWebJarFiles() {
-        File targetFile = new File(System.getProperty("user.home") + "/.hotreload/", "hotreload-web-" + getLatestVersion() + ".jar");
-        targetFile.getParentFile().mkdirs();
-        if (targetFile.exists()) {
-            return targetFile;
-        }
-        logger.info("HotReload web jar not found {}, downloading...", targetFile.getAbsolutePath());
-        String url = ALI_YUN_MAVEN_PREFIX + "/com/github/liuzhengyang/hotreload-web/" + getLatestVersion() + "/hotreload-web-" + getLatestVersion() + ".jar";
-        try {
-            InputStream inputStream = openUrlStream(url);
-            Files.copy(inputStream, targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            return targetFile;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private static File findLocalHotReloadAgentJarFiles() {
-        File targetFile = new File(System.getProperty("user.home") + "/.hotreload/", "hotreload-agent-" + getLatestVersion() + "-jar-with-dependencies.jar");
-        targetFile.getParentFile().mkdirs();
-        if (targetFile.exists()) {
-            return targetFile;
-        }
-        logger.info("HotReload Agent jar not found {}, downloading...", targetFile.getAbsolutePath());
-        String url = ALI_YUN_MAVEN_PREFIX + "/com/github/liuzhengyang/hotreload-agent/" + getLatestVersion() + "/hotreload-agent-" + getLatestVersion() + "-jar-with-dependencies.jar";
-        try {
-            InputStream inputStream = openUrlStream(url);
-            Files.copy(inputStream, targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            return targetFile;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private static InputStream openUrlStream(String url) throws IOException {
-        URL targetUrl = new URL(url);
-        HttpURLConnection conn = (HttpURLConnection) targetUrl.openConnection();
-        int responseCode = conn.getResponseCode();
-        if (responseCode == HttpURLConnection.HTTP_MOVED_PERM ||
-                responseCode == HttpURLConnection.HTTP_MOVED_TEMP) {
-            String location = conn.getHeaderField("Location");
-            return openUrlStream(location);
-        }
-        return conn.getInputStream();
-    }
-
-    public static String getLatestVersion() {
-        return "1.0.11";
     }
 }
