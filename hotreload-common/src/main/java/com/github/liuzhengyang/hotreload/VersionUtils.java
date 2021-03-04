@@ -6,6 +6,6 @@ package com.github.liuzhengyang.hotreload;
  */
 public class VersionUtils {
     public static String getLatestVersion() {
-        return "1.0.13";
+        return "1.0.14";
     }
 }

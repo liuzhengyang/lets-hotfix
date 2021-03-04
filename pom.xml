@@ -24,7 +24,7 @@
     </parent>
 
     <properties>
-        <hotreload.version>1.0.13</hotreload.version>
+        <hotreload.version>1.0.14</hotreload.version>
     </properties>
 
     <distributionManagement>
@@ -144,6 +144,9 @@
                                 </goals>
                             </execution>
                         </executions>
+                        <configuration>
+                            <source>8</source>
+                        </configuration>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>

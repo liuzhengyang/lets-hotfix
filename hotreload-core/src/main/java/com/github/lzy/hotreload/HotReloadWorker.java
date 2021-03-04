@@ -33,21 +33,25 @@ public class HotReloadWorker {
     public static void doReload(Instrumentation instrumentation, String[] splits)
             throws IOException, ClassNotFoundException, UnmodifiableClassException {
         logger.info("Start reloading. Current classloader is " + HotReloadWorker.class.getClassLoader());
-        String className = splits[0];
-        String replaceTargetFile = splits[1];
-        if (replaceTargetFile == null) {
-            logger.error("Invalid argument file is null");
-            return;
-        }
-        File file = Paths.get(replaceTargetFile).toFile();
-        if (replaceTargetFile.endsWith(".class")) {
-            logger.info("Reload by class file");
-            byte[] newClazzByteCode = Files.readAllBytes(file.toPath());
-            doReloadClassFile(instrumentation, className, newClazzByteCode);
-        } else {
-            logger.info("Reload by java file");
-            byte[] newClazzSourceBytes = Files.readAllBytes(file.toPath());
-            doCompileThenReloadClassFile(instrumentation, className, new String(newClazzSourceBytes, UTF_8));
+        try {
+            String className = splits[0];
+            String replaceTargetFile = splits[1];
+            if (replaceTargetFile == null) {
+                logger.error("Invalid argument file is null");
+                return;
+            }
+            File file = Paths.get(replaceTargetFile).toFile();
+            if (replaceTargetFile.endsWith(".class")) {
+                logger.info("Reload by class file");
+                byte[] newClazzByteCode = Files.readAllBytes(file.toPath());
+                doReloadClassFile(instrumentation, className, newClazzByteCode);
+            } else {
+                logger.info("Reload by java file");
+                byte[] newClazzSourceBytes = Files.readAllBytes(file.toPath());
+                doCompileThenReloadClassFile(instrumentation, className, new String(newClazzSourceBytes, UTF_8));
+            }
+        } catch (Exception e) {
+            logger.error("Reload failed {}", splits, e);
         }
     }
 
@@ -63,8 +67,7 @@ public class HotReloadWorker {
                 Files.write(Paths.get("/tmp/replace_" + clazzName), bytes);
                 doReloadClassFile(instrumentation, clazzName, bytes);
             } catch (Exception e) {
-                logger.error("Class " + clazzName + " reload error ");
-                e.printStackTrace();
+                logger.error("Class " + clazzName + " reload error ", e);
             }
         });
     }
@@ -100,7 +103,7 @@ public class HotReloadWorker {
                     , 0, newClazzByteCode.length);
             logger.info("Class " + className + " define success " + clazz);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
+            logger.error("defineNewClass {} failed ", className, e);
         }
         return clazz;
     }
