@@ -77,7 +77,11 @@ public class Bootstrap {
             command.add("-Deureka.client.enabled=false");
         } else {
             command.add("-Deureka.client.enabled=true");
-            command.add("-Deureka.client.service-url.defaultZone=http://" + eurekaServer + "/eureka/");
+            if (eurekaServer.startsWith("http")) {
+                command.add("-Deureka.client.service-url.defaultZone=" + eurekaServer + "/eureka/");
+            } else {
+                command.add("-Deureka.client.service-url.defaultZone=http://" + eurekaServer + "/eureka/");
+            }
         }
         File localHotReloadWebJarFiles = findLocalHotReloadWebJarFiles();
         if (localHotReloadWebJarFiles == null){
