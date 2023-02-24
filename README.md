@@ -1,3 +1,5 @@
+## 本版本的设计(agent,plugin,server)有不少缺点，有时间我再实现新的设计
+
 # lets-hotfix
 Class hot reload for java
 
